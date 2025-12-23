@@ -17,14 +17,21 @@ echo $OUTPUT->heading(get_string('lsucli', 'local_lsucli'));
 
 $mform = new lsucli_form();
 
-if ($data = $mform->get_data()) {
-    echo "<pre>";
+$data = $mform->get_data();
+if ($data !== null) {
     $command = $mform->build_cmd();
-    echo "EXECUTING: $command";
-    exec($command, $output);
-    echo implode("\n", $output);
-    echo "</pre>";
+    exec($command, $output, $return_code);
+    $return_class = $return_code == 0 ? 'alert-success' : 'alert-danger';
+    echo "<div class='alert $return_class'><strong>";
+    echo $return_code == 0 ? "Command executed successfully!" : "Command execution failed!"; 
+    echo "</strong><br />$command</div>" .
+        "<pre class='output'>" .
+        implode("\n", $output) .
+        "</pre>";
     $mform->reset();
+} else if (!$mform->is_submitted()) {
+} else if (!$mform->is_validated()) {
+    echo "<div class='alert alert-danger'>There were errors in your form submission. Please correct them and try again.</div>";
 }
 
 $mform->display();

@@ -177,7 +177,7 @@ class CLIScript {
         ],
     ];
     private function special_cases() {
-        $params = self::SPECIAL_CASE_PROPS[$this->file_name];
+        $params = self::SPECIAL_CASE_PROPS[$this->file_name] ?? [];
         if (empty($params)) {
             return;
         }

@@ -26,6 +26,21 @@ class lsucli_form extends \moodleform
         $mform->addElement('submit', 'submitbutton', 'Run Task');
     }
 
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        
+        $script = $this->cliscripts[$data['script']];
+        $group_name = $script->file_name . '_params';
+        foreach ($script->get_options() as $option) {
+            $unique = $script->file_name . '_' . $option->longname;
+            if ($option->required && empty($data[$unique])) {
+                $errors[$group_name] = $errors[$group_name] ?? '' . "Required option $option->longname is missing<br />";
+            }
+        }
+
+        return $errors;
+    }
+
     /**
      * @param CLIScript[] $cliscripts
      * @return void
@@ -42,8 +57,10 @@ class lsucli_form extends \moodleform
             $mform->hideIf($script->file_name . '_help', 'script', 'neq', $script->file_name);
 
             $group = $this->create_option_elements($script);
-            $mform->addGroup($group, $script->file_name . '_params', 'Options', null, false);
+            $group_name = $script->file_name . '_params';
+            $mform->addGroup($group, $group_name, 'Options', null, false);
             $mform->hideIf($script->file_name . '_params', 'script', 'neq', $script->file_name);
+            // $mform->disabledIf($script->file_name . '_params', 'script', 'neq', $script->file_name);
         }
     }
 
@@ -81,9 +98,6 @@ class lsucli_form extends \moodleform
                 } else {
                     $mform->setType($unique, PARAM_TEXT);
                 }
-            }
-            if ($option->required == true) {
-                $mform->addRule($unique, get_string('err_required', 'local_lsucli'), 'required', null, 'server');
             }
         }
         return $group;
